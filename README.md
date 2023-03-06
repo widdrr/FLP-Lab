@@ -1,1 +1,1 @@
-# FLP-Lab
+# miniHaskell
