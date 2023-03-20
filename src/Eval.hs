@@ -4,7 +4,9 @@ import Exp
 import Data.List ( union, delete )
 
 vars :: Exp -> [IndexedVar]
-vars = undefined
+vars (X v) = [v]
+vars (Lam v c) = if elem v (vars c) then vars c else v : vars c
+vars (App c1 c2) = union (vars c1) (vars c2) 
 
 -- >>> vars (Lam (makeIndexedVar "x") (X (makeIndexedVar "y")))
 -- [IndexedVar {ivName = "x", ivCount = 0},IndexedVar {ivName = "y", ivCount = 0}]
@@ -16,7 +18,9 @@ vars = undefined
 -- [IndexedVar {ivName = "x", ivCount = 0}]
 
 freeVars :: Exp -> [IndexedVar]
-freeVars = undefined
+freeVars (X v) = [v]
+freeVars (Lam v c) = filter (not . (==) v) (vars c)
+freeVars (App c1 c2) = union (freeVars c1) (freeVars c2)
 
 -- >>> freeVars (Lam (makeIndexedVar "x") (X (makeIndexedVar "y")))
 -- [IndexedVar {ivName = "y", ivCount = 0}]
@@ -31,7 +35,7 @@ freeVars = undefined
 -- []
 
 occursFree :: IndexedVar -> Exp -> Bool
-occursFree = undefined
+occursFree v exp = elem v (freeVars exp)
 
 -- >>> makeIndexedVar "x" `occursFree` Lam (makeIndexedVar "x") (X (makeIndexedVar "y"))
 -- False
@@ -40,7 +44,9 @@ occursFree = undefined
 -- True
 
 freshVar :: IndexedVar -> [IndexedVar] -> IndexedVar
-freshVar = undefined
+freshVar v vs = if elem (IndexedVar (ivName v) (ivCount v + 1)) vs 
+    then freshVar (IndexedVar (ivName v) (ivCount v + 1)) vs
+    else (IndexedVar (ivName v) (ivCount v + 1))
 
 -- >>> freshVar (makeIndexedVar "x") [makeIndexedVar "x"]
 -- IndexedVar {ivName = "x", ivCount = 1}
@@ -49,13 +55,16 @@ freshVar = undefined
 -- IndexedVar {ivName = "x", ivCount = 2}
 
 renameVar :: IndexedVar -> IndexedVar -> Exp -> Exp
-renameVar toReplace replacement = undefined
+renameVar toReplace replacement (X var) = if var == toReplace then X replacement else X var
+renameVar toReplace replacement (Lam var exp) = Lam (if var == toReplace then replacement else var) (renameVar toReplace replacement exp)
+renameVar toReplace replacement (App exp1 exp2) = App (renameVar toReplace replacement exp1) (renameVar toReplace replacement exp2)
 
 -- >>> renameVar (IndexedVar {ivName = "x", ivCount = 0}) (IndexedVar {ivName = "z", ivCount = 0}) (App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "x", ivCount = 0})))
 -- App (Lam (IndexedVar {ivName = "z", ivCount = 0}) (X (IndexedVar {ivName = "z", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
 
 substitute :: IndexedVar -> Exp -> Exp -> Exp
-substitute toReplace replacement = undefined
+substitute toReplace replacement (X var) = f var == toReplace then replacement else X var
+substitute toReplace replacement (Lam var exp) = undefined
 
 -- >>> substitute (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "z", ivCount = 0})) (App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "x", ivCount = 0})))
 -- App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
