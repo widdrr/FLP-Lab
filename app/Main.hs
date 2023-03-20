@@ -5,6 +5,8 @@ import System.Console.Isocline
 import Text.ParserCombinators.Parsec(parse)
 
 import Exp
+import Eval
+import Sugar
 import Parsing
 import Printing
 import REPLCommand
