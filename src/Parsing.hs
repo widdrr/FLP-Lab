@@ -79,7 +79,7 @@ natExp = Nat <$> fromInteger <$> (natural miniHs)
 -- Nat 223
 
 parenExp :: Parser ComplexExp
-parenExp = parens miniHs varExp
+parenExp = parens miniHs expr
 -- >>> ghci> testParse parenExp "(a)"
 -- CX (Var {getVar = "a"})
 

@@ -23,4 +23,5 @@ main = do
             Load _ -> putStrLn("WIP") >> main
             Eval s -> case parse exprParser "<input>" s of
                 Left err -> print err >> main
-                Right c -> putStrLn (showExp c) >> main
+                Right c -> (putStrLn . showExp . sugarExp . normalize . desugarExp $ c) >> main
+                --Right c -> (putStrLn . showExp $ c) >> main

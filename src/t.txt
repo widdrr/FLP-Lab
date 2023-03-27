@@ -1,0 +1,16 @@
+CApp 
+    (CApp 
+        (CLam (Var {getVar = "x"}) 
+            (CLam (Var {getVar = "y"}) 
+                (CX (Var {getVar = "y"})))) 
+        (CApp 
+            (CLam (Var {getVar = "x"}) 
+                (CApp 
+                    (CX (Var {getVar = "x"})) 
+                    (CX (Var {getVar = "x"})))) 
+            (CLam (Var {getVar = "x"}) 
+                (CApp 
+                    (CX (Var {getVar = "x"})) 
+                    (CX (Var {getVar = "x"})))))) 
+    (CLam (Var {getVar = "z"}) 
+        (CX (Var {getVar = "z"})))

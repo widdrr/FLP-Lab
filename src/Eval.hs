@@ -63,8 +63,21 @@ renameVar toReplace replacement (App exp1 exp2) = App (renameVar toReplace repla
 -- App (Lam (IndexedVar {ivName = "z", ivCount = 0}) (X (IndexedVar {ivName = "z", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
 
 substitute :: IndexedVar -> Exp -> Exp -> Exp
-substitute toReplace replacement (X var) = f var == toReplace then replacement else X var
-substitute toReplace replacement (Lam var exp) = undefined
+substitute toReplace replacement (X var) = if var == toReplace then replacement else X var
+substitute toReplace replacement (App exp1 exp2) = (App (substitute toReplace replacement exp1) (substitute toReplace replacement exp2))
+substitute toReplace replacement (Lam var exp) = if var == toReplace then (Lam var exp) 
+                                                 else
+                                                    if not (occursFree var replacement) then (Lam var (substitute toReplace replacement exp))
+                                                    else
+                                                        (Lam newVar (substitute toReplace replacement renamedExp))
+                                                        where
+                                                            newVar :: IndexedVar
+                                                            newVar = freshVar var (vars replacement)
+
+                                                            renamedExp :: Exp
+                                                            renamedExp = renameVar var newVar exp
+
+
 
 -- >>> substitute (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "z", ivCount = 0})) (App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "x", ivCount = 0})))
 -- App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
@@ -73,10 +86,28 @@ substitute toReplace replacement (Lam var exp) = undefined
 -- App (Lam (IndexedVar {ivName = "x", ivCount = 1}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
 
 normalize :: Exp -> Exp
-normalize = undefined
+normalize (App (Lam var exp1) exp2) = (substitute var exp2 exp1)
+normalize (App exp1 exp2) = undefined
+normalize exp = exp
+
+
+
+myNormalize :: Exp -> Exp
+myNormalize (App (Lam var exp1) exp2) = myNormalize (substitute var exp2 exp1)
+myNormalize (App exp1 exp2) = let newExpr = (App (myNormalize exp1) (myNormalize exp2)) in
+                                    case newExpr of
+                                        (App (Lam var exp1) exp2) -> myNormalize newExpr
+                                        _ -> newExpr
+myNormalize (Lam var exp) = (Lam var (myNormalize exp))
+myNormalize (X var) = (X var)
 
 -- >>> normalize (X (makeIndexedVar "x"))
 -- X (IndexedVar {ivName = "x", ivCount = 0})
 
 -- >>> normalize (App (Lam (IndexedVar {ivName = "y", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (App (Lam (IndexedVar {ivName = "y", ivCount = 0}) (App (X (IndexedVar {ivName = "y", ivCount = 0})) (X (IndexedVar {ivName = "y", ivCount = 0})))) (Lam (IndexedVar {ivName = "y", ivCount = 0}) (App (X (IndexedVar {ivName = "y", ivCount = 0})) (X (IndexedVar {ivName = "y", ivCount = 0}))))))
 -- X (IndexedVar {ivName = "x", ivCount = 0})
+
+-- >>> (\x -> (\y -> y)) ((\x -> x x) (\x -> x x)) (\z -> z)
+-- \z -> z
+
+-- 
