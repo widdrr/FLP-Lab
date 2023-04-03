@@ -77,21 +77,26 @@ substitute toReplace replacement (Lam var exp) = if var == toReplace then (Lam v
                                                             renamedExp :: Exp
                                                             renamedExp = renameVar var newVar exp
 
-
-
 -- >>> substitute (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "z", ivCount = 0})) (App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "x", ivCount = 0})))
 -- App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
 
 -- >>> substitute (IndexedVar {ivName = "y", ivCount = 0}) (X (IndexedVar {ivName = "x", ivCount = 0})) (App (Lam (IndexedVar {ivName = "x", ivCount = 0}) (X (IndexedVar {ivName = "y", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0})))
 -- App (Lam (IndexedVar {ivName = "x", ivCount = 1}) (X (IndexedVar {ivName = "x", ivCount = 0}))) (X (IndexedVar {ivName = "z", ivCount = 0}))
 
+
+--smen'd from lab : (
 normalize :: Exp -> Exp
-normalize (App (Lam var exp1) exp2) = (substitute var exp2 exp1)
-normalize (App exp1 exp2) = undefined
-normalize exp = exp
+normalize e = maybe e normalize (step e)
+    where
+        step (X x) = Nothing
+        step (Lam x e) = Lam x <$> step e
+        step (App (Lam x ex) e) = Just (substitute x e ex)
+        step (App e1 e2)
+            = case step e1 of
+                Nothing -> App e1 <$> step e2
+                Just e1' -> Just (App e1' e2)
 
-
-
+--personal normalize implementation, not normal
 myNormalize :: Exp -> Exp
 myNormalize (App (Lam var exp1) exp2) = myNormalize (substitute var exp2 exp1)
 myNormalize (App exp1 exp2) = let newExpr = (App (myNormalize exp1) (myNormalize exp2)) in
