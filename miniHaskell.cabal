@@ -29,6 +29,7 @@ library
       Exp
       Parsing
       Printing
+      Program
       REPLCommand
       Sugar
   other-modules:

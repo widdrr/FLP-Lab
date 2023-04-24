@@ -8,7 +8,7 @@ newtype Var = Var { getVar :: String }
 
 data ComplexExp                         --  ComplexExp ::= "(" ComplexExp ")"
   = CX Var                              --          |   Var
-  | Nat Natural                         --          |   Natural
+  | Nat Natural                           --        |   Natural
   | CLam Var ComplexExp                 --          |   "\" Var "->" ComplexExp
   | CApp ComplexExp ComplexExp          --          |   ComplexExp ComplexExp
   | Let Var ComplexExp ComplexExp       --          |   "let" Var ":=" ComplexExp "in"
@@ -30,3 +30,4 @@ data Exp
   | Lam IndexedVar Exp
   | App Exp Exp
   deriving (Show)
+
