@@ -19,7 +19,7 @@ haskellOp :: Parser String
 haskellOp = identifier opSymbol opSymbol
   where
     opSymbol = satisfy isOp
-    isOp = (`elem` "`~!@#$%^&*_+=|:<>.?/")
+    isOp = (`elem` "`~!@#$%^&*_+=|<>.?/")
 
 var :: Parser Var
 var = Var <$> (haskellId <|> haskellOp)
